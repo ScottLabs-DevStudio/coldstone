@@ -64,6 +64,22 @@ test("docs-only change skips the build", () => {
   assert.equal(decide((cwd) => write(cwd, "docs/notes.md", "# Notes\nmore\n")), 0);
 });
 
+test("root README.md-only change skips the build", () => {
+  assert.equal(decide((cwd) => write(cwd, "README.md", "# Readme\nmore\n")), 0);
+});
+
+test("public/README.md change builds (served as a static asset)", () => {
+  assert.equal(decide((cwd) => write(cwd, "public/README.md", "# Public\n")), 1);
+});
+
+test("public/brand/README.md change builds", () => {
+  assert.equal(decide((cwd) => write(cwd, "public/brand/README.md", "# Brand\n")), 1);
+});
+
+test("nested markdown outside docs builds", () => {
+  assert.equal(decide((cwd) => write(cwd, "src/app/README.md", "# App\n")), 1);
+});
+
 test("code change builds", () => {
   assert.equal(decide((cwd) => write(cwd, "src/app/page.tsx", "export default 1;\n")), 1);
 });

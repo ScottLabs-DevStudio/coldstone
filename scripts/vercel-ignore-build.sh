@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Vercel Ignored Build Step (vercel.json "ignoreCommand").
 # Exit 0 = skip the build. Exit 1 = build.
-# Skips only when every file changed since the last successful deploy
-# is docs or agent config. Anything unclear falls back to building.
+# Skips only when every file changed since the last successful deploy is
+# root-level markdown (no slash in the path), or under docs/, .github/ or
+# .cursor/. Markdown anywhere else (public/README.md, app/**/README.md) is
+# served or bundled, so it builds. Anything unclear falls back to building.
 prev="${VERCEL_GIT_PREVIOUS_SHA:-}"
 [ -n "$prev" ] || exit 1
 # Git errors go to stderr so Vercel build logs show why; they still fall back
@@ -14,7 +16,9 @@ files="$(git diff --no-renames --name-only "$prev" HEAD)" || exit 1
 [ -n "$files" ] || exit 1
 while IFS= read -r f; do
   case "$f" in
-    *.md|docs/*|.github/*|.cursor/*) ;;
+    docs/*|.github/*|.cursor/*) ;;
+    */*) exit 1 ;;
+    *.md) ;;
     *) exit 1 ;;
   esac
 done <<< "$files"
